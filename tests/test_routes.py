@@ -176,7 +176,7 @@ class TestProductRoutes(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["name"], test_product.name)
-    
+
     def test_get_product_not_found(self):
         """It should not Get a Product thats not found"""
         response = self.client.get(f"{BASE_URL}/0")
@@ -199,6 +199,10 @@ class TestProductRoutes(TestCase):
         updated_product = response.get_json()
         self.assertEqual(updated_product["description"], "unknown")
 
+    def test_update_non_existing_product(self):
+        product = ProductFactory()
+        response = self.client.put(f"{BASE_URL}/1", json=product.serialize())
+        self.assertEqual(response.status_code,status.HTTP_404_NOT_FOUND)
 
     def test_delete_product(self):
         """It should Delete a Product"""

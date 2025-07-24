@@ -27,7 +27,7 @@ import os
 import logging
 import unittest
 from decimal import Decimal
-from service.models import Product, Category, db
+from service.models import Product, Category, db, DataValidationError
 from service import app
 from tests.factories import ProductFactory
 
@@ -146,6 +146,21 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(products[0].id, product.id)
         self.assertEqual(products[0].description, "Updated Description")
 
+    def test_update_id_is_none(self):
+        """ Tests updating description """
+        product = ProductFactory()
+        product.id = None
+        product.create()
+        product.id = None
+        with self.assertRaises(DataValidationError) as cm:
+            product.update() # This call should raise DataValidationError
+
+        # Optional: Verify the error message
+        expected_message = "Update called with empty ID field"
+        self.assertEqual(str(cm.exception), expected_message)
+        
+    
+
     def test_delete(self):
         """ Tests Delete """
         product = ProductFactory()
@@ -205,3 +220,58 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(found.count(), count)
         for product in found:
             self.assertEqual(product.category, category)
+
+
+    def test_find_product_by_price(self):
+        """ Test find a product by price """
+        products = ProductFactory.create_batch(10)
+        for product in products:
+            product.create()
+        price = products[0].price
+        count = len([product for product in products if product.price == price])
+        found = Product.find_by_price(price)
+        self.assertEqual(found.count(), count)
+        for product in found:
+            self.assertEqual(product.price, price)
+    
+    def test_find_product_by_str_price(self):
+        """ Test find a product by str price """
+        products = ProductFactory.create_batch(10)
+        for product in products:
+            product.create()
+        price = products[0].price
+        count = len([product for product in products if product.price == price])
+        found = Product.find_by_price(str(price))
+        self.assertEqual(found.count(), count)
+        for product in found:
+            self.assertEqual(product.price, price)
+    
+
+    def test_deserialize_str_available(self):
+        """ It should deserialize a serialized Product with str available"""
+        product = ProductFactory()
+        data = product.serialize()
+        data["available"]=str(data["available"])
+        with self.assertRaises(DataValidationError) as cm:
+            deserialized_product = Product().deserialize(data)
+        # Optional: Verify the error message
+        expected_message =  "Invalid type for boolean [available]: "+ str(type(data["available"]))
+        self.assertEqual(str(cm.exception), expected_message)
+
+    def test_deserialize_invalid_attribute(self):
+        """ It should deserialize a serialized Product """
+        product = ProductFactory()
+        data = product.serialize()
+        data["category"]="INVALID_CATEGORY_NAME"
+        with self.assertRaises(DataValidationError) as cm:
+            deserialized_product = Product().deserialize(data)
+        self.assertTrue(cm.exception.args[0].startswith("Invalid attribute: "))
+
+    def test_deserialize_empty_attribute(self):
+        """ It should raise an error due to empty_attribute"""
+        product = ProductFactory()
+        data = product.serialize()
+        data["name"]=None
+        with self.assertRaises(DataValidationError) as cm:
+            deserialized_product = Product().deserialize(None)
+        self.assertTrue(cm.exception.args[0].startswith("Invalid product: body of request contained bad or no data "))
