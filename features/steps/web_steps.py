@@ -57,6 +57,17 @@ def step_impl(context, element_name, text_string):
     element.clear()
     element.send_keys(text_string)
 
+@when(u'I press the "{button_name}" button')
+def step_impl(context,button_name):
+    btn_id = button_name.lower().replace(' ', '_')+"-btn"
+    element=context.driver.find_element(By.ID,btn_id)
+    element.click()
+
+@then(u'I should see the message "{message}"')
+def step_impl(context, message):
+    element = context.driver.find_element(By.ID,"flash_message")
+    assert message in element.text
+
 @when('I select "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
@@ -95,6 +106,9 @@ def step_impl(context, element_name):
     )
     element.clear()
     element.send_keys(context.clipboard)
+
+
+
 
 ##################################################################
 # This code works because of the following naming convention:
