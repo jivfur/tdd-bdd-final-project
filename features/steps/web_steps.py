@@ -118,8 +118,6 @@ def step_impl(context, element_name):
 # to get the element id of any button
 ##################################################################
 
-## UPDATE CODE HERE ##
-
 ##################################################################
 # This code works because of the following naming convention:
 # The id field for text input in the html is the element name
@@ -138,7 +136,15 @@ def step_impl(context, text_string, element_name):
     )
     assert(found)
 
-@when('I change "{element_name}" to "{text_string}"')
+@then('I should not see "{text_string}" in the "{element_name}" field')
+def step_impl(context, text_string, element_name):
+    element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located((By.ID, element_id))
+    )
+    assert(text_string not in element.text)
+
+@when('I change the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = WebDriverWait(context.driver, context.wait_seconds).until(

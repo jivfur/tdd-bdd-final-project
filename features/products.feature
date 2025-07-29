@@ -57,6 +57,34 @@ Scenario: Read a Product
 
 Scenario: Updating a Product
     When I visit the "Home Page"
+    And I set the "Name" to "Hat"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    When I copy the "Id" field
+    And I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "Hat" in the "Name" field
+    And I should see "A red fedora" in the "Description" field
+    And I should see "59.95" in the "Price" field
+    When I change the "Description" to "A blue fedora"
+    And I change the "Price" to "50.00"
+    And I press the "Update" button
+    Then I should see the message "Success"
+    When I copy the "Id" field
+    And I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Retrieve" button
+    Then I should see "A blue fedora" in the "Description" field
+    And I should not see "A red fedora" in the "Description" field
+    And I should see "50.00" in the "Price" field
+    And I should not see "59.95" in the "Price" field
+
+
+
+
+
 
 
 
