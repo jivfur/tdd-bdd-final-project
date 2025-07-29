@@ -144,6 +144,12 @@ def step_impl(context, text_string, element_name):
     )
     assert(text_string not in element.text)
 
+
+@then('I should not see "{text_string}" in the results')
+def step_impl(context, text_string):
+    element = context.driver.find_element(By.ID,'search_results')
+    assert(text_string not in element.text)
+
 @when('I change the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
